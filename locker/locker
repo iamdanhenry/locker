@@ -1,0 +1,126 @@
+#!/usr/local/bin/python3
+
+import sys
+import os
+from os.path import expanduser
+
+
+
+def print_b(input, display = True):
+    #print bold text
+    if display:
+        sys.stdout.write('\033[1m' + input + '\033[0m')
+    return('\033[1m' + input + '\033[0m')
+
+def print_u(input, display = True):
+    #print underline text
+    if display:
+        sys.stdout.write('\033[4m' + input + '\033[0m')
+    return('\033[4m' + input + '\033[0m')
+
+def print_p(input, display = True):
+    #print purple text
+    if display:
+        sys.stdout.write('\033[95m' + input  + '\033[0m')
+    return('\033[95m' + input  + '\033[0m')
+
+
+def print_b(input, display = True):
+    #print blue text
+    if display:
+        sys.stdout.write('\033[94m' + input  + '\033[0m')
+    return('\033[94m' + input  + '\033[0m')
+
+def print_o(input, display = True):
+    #print orange text
+    if display:
+        sys.stdout.write('\033[93m' + input  + '\033[0m')
+    return('\033[93m' + input  + '\033[0m')
+
+def displayHelp():
+    print_b(print_p(print_u("\nLocker - Simple dotfile storage.\n", False), False))
+    print("     -h, --help   : Display this help text.")
+    print("     -o           : Force overwrite of dotfiles.")
+    print("     -b           : Backup existing files.")
+    print("                       Overrides -o ")
+    print("\n\n")
+
+
+
+
+def main(argv):
+    writepath = expanduser("~") + '/writetest'
+    overwrite = False
+    backup = False
+
+    if '--help' in argv or '-h' in argv:
+        displayHelp()
+        return None
+
+    if '-o' in argv:
+        overwrite = True
+
+    if '-b' in argv:
+        backup = True
+
+    # Display the introduction
+
+    print_b(print_p(print_u("\nLocker - Simple dotfile storage.\n\n", False), False))
+    print_b(print_p("Beginning linking dotfiles...\n"), False)
+
+    # position in the directory below the locker script
+    scriptPath = os.path.dirname(os.path.realpath(__file__))
+    os.chdir(scriptPath)
+    os.chdir('../')
+    cwd = os.getcwd()
+
+    # get the directory listing
+    data = os.listdir()
+    # remove the "locker" directory from the directory listing
+    data.remove('locker')
+
+    
+    # Begin linking files...
+    for x in range(len(data)):
+        linkFile(data[x], cwd, overwrite, backup, writepath)
+
+    sys.stdout.write('\n')
+    
+
+
+def linkFile(filename, cwd, overwrite, backup, writepath):
+    print_b("Linking File: ")
+    sys.stdout.write(filename + '\n')
+
+    # check to see if file exists.
+    parts = filename.split('.')
+    # is a file to be linked
+    if parts[1] == 'link':
+        if os.path.exists(writepath + "/." + parts[0]): 
+            # file already exists, but is it a symlink already?
+            if os.path.islink(writepath + "/." + parts[0]): 
+                #it's a symlink, just remove it!
+                os.remove(writepath + "/." + parts[0])
+                os.symlink(cwd + '/' + filename, writepath + '/.' + parts[0])
+                return None
+
+            if backup:
+                os.rename(writepath + '/.' + parts[0], writepath + '/.' + parts[0] + ".backup")
+                print_p('     Backing up existing file.\n')
+                os.symlink(cwd + '/' + filename, writepath + '/.' + parts[0])
+
+            elif overwrite:
+                print_o('     Overwriting existing file.\n')
+                os.remove(writepath + '/.' + parts[0])
+                os.symlink(cwd + '/' + filename, writepath + '/.' + parts[0])
+            else:
+                print_o('     File exists, skipping.\n')
+        else:
+            os.symlink(cwd + '/' + filename, writepath + '/.' + parts[0])
+            
+    
+
+main(sys.argv)
+
+
+
