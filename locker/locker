@@ -66,7 +66,6 @@ def main(argv):
     # Display the introduction
 
     print_b(print_p(print_u("\nLocker - Simple dotfile storage.\n\n", False), False))
-    print_b(print_p("Beginning linking dotfiles...\n"), False)
 
     # position in the directory below the locker script
     scriptPath = os.path.dirname(os.path.realpath(__file__))
@@ -74,43 +73,53 @@ def main(argv):
     os.chdir('../')
     cwd = os.getcwd()
 
+
+
     # get the directory listing
     data = os.listdir()
     # remove the "locker" directory from the directory listing
     data.remove('locker')
-
+    print_o('Ready to do the damn thing? (y/n)')
     
-    # Begin linking files...
-    for x in range(len(data)):
-        linkFile(data[x], cwd, overwrite, backup, writepath)
 
-    sys.stdout.write('\n')
+    if(yes_or_no('')):
+        print_b(print_p("Beginning linking dotfiles...\n"), False)
+        # Begin linking files...
+        for x in range(len(data)):
+            linkFile(data[x], cwd, overwrite, backup, writepath)
+    
+        sys.stdout.write('\n')
+    else:
+        print_o('Well then, what are you here for?\n\n')
     
 
 
 def linkFile(filename, cwd, overwrite, backup, writepath):
-    print_b("Linking File: ")
-    sys.stdout.write(filename + '\n')
 
     # check to see if file exists.
     parts = filename.split('.')
     # is a file to be linked
     if parts[1] == 'link':
+        
+        print_b("Linking File: ")
+        sys.stdout.write(filename + '\n')
         if os.path.exists(writepath + "/." + parts[0]): 
             # file already exists, but is it a symlink already?
-            if os.path.islink(writepath + "/." + parts[0]): 
-                #it's a symlink, just remove it!
+            # and if so, is it the right symlink?
+            if os.path.islink(writepath + "/." + parts[0]) and os.path.realpath(writepath + "/." + parts[0]): 
+                # it's the right symlink, just remove it!
                 os.remove(writepath + "/." + parts[0])
                 os.symlink(cwd + '/' + filename, writepath + '/.' + parts[0])
+                print_p('     Replaced existing symlink.\n')
                 return None
 
             if backup:
                 os.rename(writepath + '/.' + parts[0], writepath + '/.' + parts[0] + ".backup")
-                print_p('     Backing up existing file.\n')
+                print_p('     Backed up existing file.\n')
                 os.symlink(cwd + '/' + filename, writepath + '/.' + parts[0])
 
             elif overwrite:
-                print_o('     Overwriting existing file.\n')
+                print_o('     Replaced existing file.\n')
                 os.remove(writepath + '/.' + parts[0])
                 os.symlink(cwd + '/' + filename, writepath + '/.' + parts[0])
             else:
@@ -118,9 +127,19 @@ def linkFile(filename, cwd, overwrite, backup, writepath):
         else:
             os.symlink(cwd + '/' + filename, writepath + '/.' + parts[0])
             
-    
+def yes_or_no(answer):
+    yes = set(['yes','y', 'ye', ''])
+    no = set(['no','n'])
+     
+    while True:
+        choice = input(answer).strip().lower()
+        if choice in yes:
+           return True
+        elif choice in no:
+           return False
+        print_o("Please respond with 'yes' or 'no'\n")
+        return False
+
+
 
 main(sys.argv)
-
-
-
