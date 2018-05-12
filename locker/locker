@@ -136,7 +136,7 @@ def mac_specific():
     if os.popen('uname -s').read() == "Darwin\n":
         print_p('It appears this is a Mac, would you like to install homebrew? (y/n): ')
         if yes_or_no(''):
-            if os.popen('which brew').read() == 'brew not found\n':
+            if os.popen('which brew').read() != 'brew not found\n':
                 print_o('\nOops, it appears Homebrew is already installed at \'' + os.popen('which brew').read()[:-1] + '\'.')
             else:
                 # Homebrew is not installed, install it...
