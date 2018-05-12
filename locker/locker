@@ -5,7 +5,6 @@ import os
 from os.path import expanduser
 
 
-
 def print_b(input, display = True):
     #print bold text
     if display:
@@ -86,8 +85,13 @@ def main(argv):
         print_b(print_p("Beginning linking dotfiles...\n"), False)
         # Begin linking files...
         for x in range(len(data)):
+            # look through files for *.link and create symlinks
+            # for those files.
             linkFile(data[x], cwd, overwrite, backup, writepath)
     
+        #if it's a mac, let's install homebrew.
+        mac_specific()
+
         sys.stdout.write('\n')
     else:
         print_o('Well then, what are you here for?\n\n')
@@ -126,6 +130,22 @@ def linkFile(filename, cwd, overwrite, backup, writepath):
                 print_o('     File exists, skipping.\n')
         else:
             os.symlink(cwd + '/' + filename, writepath + '/.' + parts[0])
+
+def mac_specific():
+
+    if os.popen('uname -s').read() == "Darwin\n":
+        print_p('It appears this is a Mac, would you like to install homebrew? (y/n): ')
+        if yes_or_no(''):
+            if os.popen('which brew').read() == 'brew not found\n':
+                print_o('\nOops, it appears Homebrew is already installed at \'' + os.popen('which brew').read()[:-1] + '\'.')
+            else:
+                # Homebrew is not installed, install it...
+                print_o('NOTE:  Installing homebrew will require administrator privs, and you will need to enter your password.\n Are you okay with this? (y/n): ')
+                if yes_or_no('') == False:
+                    print_p('Okay, you can install manually later from: https://brew.sh')
+                else:
+                    os.system('curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install | ruby')
+
             
 def yes_or_no(answer):
     yes = set(['yes','y', 'ye'])
@@ -134,7 +154,6 @@ def yes_or_no(answer):
     while True:
         choice = input(answer).strip().lower()
         if choice in yes:
-            print ('running' )
             return True
         elif choice in no:
             return False
