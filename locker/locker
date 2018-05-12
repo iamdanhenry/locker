@@ -79,7 +79,7 @@ def main(argv):
     data = os.listdir()
     # remove the "locker" directory from the directory listing
     data.remove('locker')
-    print_o('Ready to do the damn thing? (y/n)')
+    print_o('Ready to do the damn thing? (y/n) ')
     
 
     if(yes_or_no('')):
@@ -128,18 +128,20 @@ def linkFile(filename, cwd, overwrite, backup, writepath):
             os.symlink(cwd + '/' + filename, writepath + '/.' + parts[0])
             
 def yes_or_no(answer):
-    yes = set(['yes','y', 'ye', ''])
+    yes = set(['yes','y', 'ye'])
     no = set(['no','n'])
      
     while True:
         choice = input(answer).strip().lower()
         if choice in yes:
-           return True
+            print ('running' )
+            return True
         elif choice in no:
-           return False
-        print_o("Please respond with 'yes' or 'no'\n")
-        return False
+            return False
 
+        else:
+            print_o("Please respond with 'yes' or 'no' (y/n): ")
+            return yes_or_no('')
 
 
 main(sys.argv)
